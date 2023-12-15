@@ -6,9 +6,15 @@ import re
 import os
 
 class LabDataObject(object):
-    def __init__(self):
-        self.dateoftest = ''
-        self.labResult = ''
+    def __init__(self,dateoftest,labResult):
+        self.dateoftest = dateoftest
+        self.labResult = labResult
+
+    def setDateoftest(self,dateoftest): self.dateoftest = dateoftest
+    def setlabResult(self,labresult): self.labResult = labresult
+
+    def getDateoftest(self): return self.dateoftest
+    def getLabresult(self): return  self.labResult
 
 dir = 'D:\\Newfolder\\Per\\Healthview\\Reports\\Sugar'
 files = os.listdir(dir)
@@ -21,49 +27,36 @@ labresults = []
 for file in files:
     text = extract_text(dir + '\\' + file )
     reportType = "Only HBA1C"
-        #file[0:10]
-    #print(reportType)
     reportType1 = file[0:14]
-    l = LabDataObject()
+    l = LabDataObject("","")
     if reportType == "Only HBA1C":
         c1 = 0
         date = ''
         for t in text.split('\n'):
-            #print(t + ' - ' + str(c1) )
             if c1 == 52:
                 date = t.strip()
                 c1 += 1
-                l.dateoftest = date
+                #l.dateoftest = date
+                l.setDateoftest(date)
                 results.append(date)
-                #print(t.strip())
-                #print( ' t.strip() + ' + t.strip())
+                #labresults[date] = date
+                    #= date
             elif c1 == 77:
-                l.labResult = t.strip()
+                #l.labResult = t.strip()
+                l.setlabResult(t.strip())
                 c1 += 1
+                #labresults[date].__add__(l)
             else:
                 c1 += 1
         labresults.append(l)
-    elif reportType == "Complete Blood":
-        d1 = 0
-        date1 = ''
-        for t in text.split('\n'):
-            if d1 == 52:
-                # print(d1)
-                # print(t.strip())
-                date1 = t.strip()
-                d1 += 1
-                l.dateoftest = date1
-                results.append(date1)
-            elif d1 == 934:
-                l.labResult = t.strip()
-                d1 += 1
-            else:
-                d1 += 1
-        labresults.append(l)
 
-for e in labresults:
-    print(e.dateoftest)
-    print(e.labResult)
+for o in labresults:
+    print(o.dateoftest)
+    print(o.labResult)
 
-for key in results:
-    print(key)
+for r in results:
+    print(r)
+    d = r
+
+
+

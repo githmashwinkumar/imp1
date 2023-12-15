@@ -4,6 +4,7 @@ from pdfminer.high_level import extract_pages, extract_text
 from pdfminer.high_level import extract_pages, extract_text
 import re
 import os
+import numpy as np
 
 dir = 'D:\\Newfolder\\Per\\Healthview\\Reports'
 files = os.listdir(dir)
