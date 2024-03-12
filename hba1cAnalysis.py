@@ -22,11 +22,11 @@ def analyze_hba1c_trend(hba1c_values):
         print("Insufficient data to check trend.")
         return
 
-    increasing_trend = all(hba1c_values[i] <= hba1c_values[i+1] for i in range(len(hba1c_values) - 1))
-    decreasing_trend = all(hba1c_values[i] >= hba1c_values[i+1] for i in range(len(hba1c_values) - 1))
+    increasing_trend = all(hba1c_values[i] < hba1c_values[i+1] for i in range(len(hba1c_values) - 1))
+    decreasing_trend = all(hba1c_values[i] > hba1c_values[i+1] for i in range(len(hba1c_values) - 1))
 
     if increasing_trend:
-        print("Your Sugar readings are out of normal range - Please book an appointment with a Doctor.")
+        print("Your Sugar readings are consistently increasing - Please book an appointment with a Doctor.")
     elif decreasing_trend:
         print("Your Sugar levels are in control - Keep it up.")
     else:
