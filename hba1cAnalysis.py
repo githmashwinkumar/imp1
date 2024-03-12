@@ -1,61 +1,66 @@
 import os
 import re
-from pdfminer.high_level import extract_text
+import fitz  # PyMuPDF
+from datetime import datetime
 
-def extract_hba1c_and_collection_on(pdf_path):
-    # Extract text from the PDF
-    pdf_text = extract_text(pdf_path)
+def extract_collection_date_from_text(text):
+    collection_date_pattern = r"Collection\s+On\s+(\d{1,2}/\d{1,2}/\d{4}\s+\d{1,2}:\d{2}\s+[AP]M)"
+    collection_date_matches = re.search(collection_date_pattern, text, re.IGNORECASE)
+    if collection_date_matches:
+        return datetime.strptime(collection_date_matches.group(1), "%d/%m/%Y %I:%M %p")
+    return None
 
-    # Use a regular expression to search for the HbA1C value
-    hba1c_match = re.search(r'HbA1C[^0-9]*(\d+\.\d+)', pdf_text, re.IGNORECASE)
-
-    hba1c_value = None
-
-    if hba1c_match:
-        hba1c_value = float(hba1c_match.group(1))
-
-    # Use regex to search for the Collection On date
-    collection_on_match = re.search(r'Collection\s*On[^0-9]*([\d\/]+\s*[\d:]+\s*[APMapm]+)', pdf_text, re.IGNORECASE)
-
-    collection_on_date = None
-
-    if collection_on_match:
-        collection_on_date = collection_on_match.group(1).strip()
-
-    return hba1c_value, collection_on_date
+def extract_hba1c_from_text(text):
+    hba1c_pattern = r"HbA1C\s+\(Whole Blood/HPLC\)\s+([\d.]+)\s+%"
+    hba1c_matches = re.findall(hba1c_pattern, text)
+    if hba1c_matches:
+        return float(hba1c_matches[0])
+    return None
 
 def analyze_hba1c_trend(hba1c_values):
-    if all(hba1c is not None for hba1c in hba1c_values):
-        if all(hba1c_values[i] <= hba1c_values[i + 1] for i in range(len(hba1c_values) - 1)):
-            print("Sugar levels are consistently increasing - Please consult a Doctor")
-        elif all(hba1c_values[i] >= hba1c_values[i + 1] for i in range(len(hba1c_values) - 1)):
-            print("Your Sugar levels are within limits - Keep up the good control")
-        else:
-            print("Sugar levels are not consistently increasing or decreasing")
+    if len(hba1c_values) < 2:
+        print("Insufficient data to check trend.")
+        return
+
+    increasing_trend = all(hba1c_values[i] <= hba1c_values[i+1] for i in range(len(hba1c_values) - 1))
+    decreasing_trend = all(hba1c_values[i] >= hba1c_values[i+1] for i in range(len(hba1c_values) - 1))
+
+    if increasing_trend:
+        print("Your Sugar readings are out of normal range - Please book an appointment with a Doctor.")
+    elif decreasing_trend:
+        print("Your Sugar levels are in control - Keep it up.")
     else:
-        print("Insufficient data to analyze the trend")
+        print("Your Sugar readings are fluctuating. Consult your Doctor for further advice.")
 
-def process_files_in_directory(directory_path):
+def check_hba1c_trend(report_folder):
+    collection_dates = []
     hba1c_values = []
-
-    for filename in os.listdir(directory_path):
+    for filename in os.listdir(report_folder):
         if filename.endswith(".pdf"):
-            pdf_path = os.path.join(directory_path, filename)
-            hba1c_value, collection_on_date = extract_hba1c_and_collection_on(pdf_path)
+            pdf_path = os.path.join(report_folder, filename)
+            with fitz.open(pdf_path) as doc:
+                text = ""
+                for page in doc:
+                    text += page.get_text()
 
-            # if hba1c_value:
-            #     print(f"The HbA1C value in {filename} is: {hba1c_value}")
-            #     hba1c_values.append(hba1c_value)
-            # else:
-            #     print(f"No HbA1C value found in {filename}")
-            #
-            # if collection_on_date:
-            #     print(f"The Collection On date in {filename} is: {collection_on_date}")
-            # else:
-            #     print(f"No Collection On date found in {filename}")
+            collection_date = extract_collection_date_from_text(text)
+            hba1c_value = extract_hba1c_from_text(text)
+            if collection_date and hba1c_value:
+                collection_dates.append((collection_date, filename, hba1c_value))
+            else:
+                print(f"Skipping file '{filename}' due to missing collection date or HbA1c value.")
 
+    # Sort collection dates
+    sorted_collection_dates = sorted(collection_dates, key=lambda x: x[0])
+
+    # Extract HbA1c readings
+    for collection_date, filename, hba1c_value in sorted_collection_dates:
+        print(f"Collection Date: {collection_date.strftime('%d/%m/%Y %I:%M %p')}, Filename: {filename}, HbA1c: {hba1c_value}")
+
+    # Extract HbA1c values for trend analysis
+    hba1c_values = [hba1c_value for _, _, hba1c_value in sorted_collection_dates]
+
+    # Analyze HbA1c trend
     analyze_hba1c_trend(hba1c_values)
 
-# Specify the directory containing your PDF files
-pdf_directory = "D:\\Newfolder\\Per\\Healthview\\Reports\\Sugar\\Ashwin"
-process_files_in_directory(pdf_directory)
+check_hba1c_trend(r"D:\Newfolder\Per\Healthview\Reports\Sugar\Amaji")
