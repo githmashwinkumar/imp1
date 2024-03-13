@@ -20,10 +20,7 @@ def extract_hba1c_and_collection_on(pdf_path):
     collection_on_date = None
 
     if collection_on_match:
-        # Fetch the value from one line above
-        collection_on_line = collection_on_match.group(0)
-        collection_on_date_match = re.search(r'(\d+/\d+/\d+\s*[\d:]+\s*[APMapm]+)', collection_on_line)
-        collection_on_date = collection_on_date_match.group(1).strip() if collection_on_date_match else None
+        collection_on_date = collection_on_match.group(1).strip()
 
     return hba1c_value, collection_on_date
 

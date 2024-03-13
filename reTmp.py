@@ -41,6 +41,6 @@ def process_files_in_directory(directory_path):
                 print(f"No Collection On date found in {filename}")
 
 # Specify the directory containing your PDF files
-pdf_directory = "D:\\Newfolder\\Per\\Healthview\\Reports\\Sugar\\Amaji"
+pdf_directory = "D:\\Newfolder\\Per\\Healthview\\Reports\\Sugar\\Ashwin"
 process_files_in_directory(pdf_directory)
 
