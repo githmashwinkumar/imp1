@@ -1,0 +1,7 @@
+<ranges>
+    <HBA1C>
+        <Normal>4.5 - 5.6</Normal>
+        <Prediabetic>5.7 - 6.4</Prediabetic>
+        <Diabetic>>= 6.5</Diabetic>
+    </HBA1C>
+</ranges>
